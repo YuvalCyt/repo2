@@ -24,7 +24,7 @@ public:
 	};
 	Parser();
 	~Parser();
-	void AddStatement(std::string &statement);
+	void AddStatement(std::string statement);
 	void EvaluateStatements();
 	void set_line(const std::string &line);
 

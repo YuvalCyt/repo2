@@ -16,7 +16,7 @@ Parser::~Parser()
 }
 
 void
-Parser::AddStatement(std::string &statement)
+Parser::AddStatement(std::string statement)
 {
 	m_statements.emplace_back(std::move(statement));
 }
@@ -55,7 +55,6 @@ Parser::BuildFunctionsMap()
 	m_funcs.insert(std::make_pair("cos", static_cast<DoubleFuncPtr>(std::cos)));
 	m_funcs.insert(std::make_pair("acos", static_cast<DoubleFuncPtr>(std::acos)));
 	m_funcs.insert(std::make_pair("tan", static_cast<DoubleFuncPtr>(std::tan)));
-	m_funcs.insert(std::make_pair("atan", static_cast<DoubleFuncPtr>(std::atan)));
 	m_funcs.insert(std::make_pair("atan", static_cast<DoubleFuncPtr>(std::atan)));
 	m_funcs.insert(std::make_pair("ceil", static_cast<DoubleFuncPtr>(std::ceil)));
 	m_funcs.insert(std::make_pair("floor", static_cast<DoubleFuncPtr>(std::floor)));

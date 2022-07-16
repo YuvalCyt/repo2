@@ -1,7 +1,7 @@
 #include "Expression.h"
 #include "Parser.h"
 #include <cmath>
-#include <functional>
+#include <iostream>
 
 Expression::Expression()
 {
@@ -41,15 +41,25 @@ double PostfixVariableExpression::Evaluate() {
 	if (m_parser)
 	{
 		res = m_parser->LookupVariable(GetVariable());
-		m_parser->RecordVariable(GetVariable(), m_inc ? res + 1 : res - 1); //flag for doing this once?
+		if (m_firstIncrement)
+		{
+			m_parser->RecordVariable(GetVariable(), m_inc ? res + 1 : res - 1);
+			m_firstIncrement = false;
+		}
 	}
 		
 	return res;
 }
 
 ArithmeticExpression::ArithmeticExpression(const ExpressionPtr &l, const ExpressionPtr &r)
-	: left(l), right(r)
+	: m_left(l), m_right(r)
 {
+}
+
+bool 
+ArithmeticExpression::Validate() const
+{
+	return m_left != nullptr && m_right != nullptr;
 }
 
 AdditionExpression::AdditionExpression(const ExpressionPtr &left, const ExpressionPtr &right)
@@ -61,11 +71,15 @@ AdditionExpression::AdditionExpression(const ExpressionPtr &left, const Expressi
 double 
 AdditionExpression::Evaluate()
 {
-	if (left == nullptr || right == nullptr)
+	if (!Validate())
+	{
+		std::cout << "AdditionExpression: Could not evaluate expression" << std::endl;
 		return 0;
+	}
+		
 
-	double a = left->Evaluate();
-	double b = right->Evaluate();
+	double a = m_left->Evaluate();
+	double b = m_right->Evaluate();
 	return a+b;
 }
 
@@ -78,11 +92,14 @@ SubstractionExpression::SubstractionExpression(const ExpressionPtr &left, const 
 double 
 SubstractionExpression::Evaluate()
 {
-	if (left == nullptr || right == nullptr)
+	if (!Validate())
+	{
+		std::cout << "SubstractionExpression: Could not evaluate expression" << std::endl;
 		return 0;
+	}
 
-	double a = left->Evaluate();
-	double b = right->Evaluate();
+	double a = m_left->Evaluate();
+	double b = m_right->Evaluate();
 	return a-b;
 }
 
@@ -95,11 +112,14 @@ MultiplicationExpression::MultiplicationExpression(const ExpressionPtr &left, co
 double 
 MultiplicationExpression::Evaluate()
 {
-	if (left == nullptr || right == nullptr)
+	if (!Validate())
+	{
+		std::cout << "MultiplicationExpression: Could not evaluate expression" << std::endl;
 		return 0;
+	}
 
-	double a = left->Evaluate();
-	double b = right->Evaluate();
+	double a = m_left->Evaluate();
+	double b = m_right->Evaluate();
 	return a*b;
 }
 
@@ -112,13 +132,23 @@ DivisionExpression::DivisionExpression(const ExpressionPtr &left, const Expressi
 double 
 DivisionExpression::Evaluate()
 {
-	if (left == nullptr || right == nullptr)
+	if (!Validate())
+	{
+		std::cout << "DivisionExpression: Could not evaluate expression" << std::endl;
 		return 0;
+	}
 
-	double a = left->Evaluate();
-	double b = right->Evaluate();
-	//todo: check b?
-	return a/b;
+	double a = m_left->Evaluate();
+	double b = m_right->Evaluate();
+	double res = 0;
+	if (b == 0.0)
+	{
+		std::cout << "DivisionExpression: Attempt to divide by zero: " << std::endl;
+	}
+	else 
+		res = a/b;
+
+	return res;
 }
 
 ModulusExpression::ModulusExpression(const ExpressionPtr &left, const ExpressionPtr &right)
@@ -130,13 +160,23 @@ ModulusExpression::ModulusExpression(const ExpressionPtr &left, const Expression
 double 
 ModulusExpression::Evaluate()
 {
-	if (left == nullptr || right == nullptr)
+	if (!Validate())
+	{
+		std::cout << "ModulusExpression: Could not evaluate expression" << std::endl;
 		return 0;
+	}
 
-	double a = left->Evaluate();
-	double b = right->Evaluate();
-	//todo: check b?
-	return std::fmod(a, b);
+	double a = m_left->Evaluate();
+	double b = m_right->Evaluate();
+	double res = 0;
+	if (b == 0.0)
+	{
+		std::cout << "ModulusExpression: Attempt to apply modulu by zero: " << std::endl;
+	}
+	else 
+		res = std::fmod(a, b);
+
+	return res;
 }
 
 ExponentiationExpression::ExponentiationExpression(const ExpressionPtr &left, const ExpressionPtr &right)
@@ -148,16 +188,16 @@ ExponentiationExpression::ExponentiationExpression(const ExpressionPtr &left, co
 double 
 ExponentiationExpression::Evaluate()
 {
-	if (left == nullptr || right == nullptr)
+	if (m_left == nullptr || m_right == nullptr)
 		return 0;
 
-	double a = left->Evaluate();
-	double b = right->Evaluate();
+	double a = m_left->Evaluate();
+	double b = m_right->Evaluate();
 	return std::pow(a, b);
 }
 
 AssignmentExpression::AssignmentExpression(Parser *parser, const VariableExpressionPtr &v, const ExpressionPtr &val)
-	: var(v), value(val)
+	: m_var(v), m_value(val)
 {
 	SetParser(parser);
 }
@@ -165,15 +205,15 @@ AssignmentExpression::AssignmentExpression(Parser *parser, const VariableExpress
 
 double AssignmentExpression::Evaluate() {
 	double x = 0;
-	if (value)
-		x = value->Evaluate();
-	if (var) 
-		m_parser->RecordVariable(var->GetVariable(), x);
+	if (m_value)
+		x = m_value->Evaluate();
+	if (m_var) 
+		m_parser->RecordVariable(m_var->GetVariable(), x);
 	return x;
 }
 
 FunctionCallExpression::FunctionCallExpression(Parser *parser, const std::string &func, const ExpressionPtr &val)
-	: function_name(func), value(val)
+	: m_function_name(func), m_value(val)
 {
 	SetParser(parser);
 }
@@ -182,8 +222,8 @@ double
 FunctionCallExpression::Evaluate()
 {
 	double x(0);
-	if (value)
-		x = value->Evaluate();
-	x = m_parser->EvaluateFunction(function_name, x);
+	if (m_value)
+		x = m_value->Evaluate();
+	x = m_parser->EvaluateFunction(m_function_name, x);
 	return x;
 }

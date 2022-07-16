@@ -25,7 +25,7 @@ public:
 	int GetCurPos();
 	void SetCurPos(int mark);
 private:
-	std::stringstream str;
+	std::stringstream m_strstrm;
 	int m_length = -1;
 	Parser* m_parser = nullptr;
 

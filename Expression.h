@@ -48,6 +48,7 @@ public:
 	virtual double Evaluate() override;
 private:
 	bool m_inc;
+	bool m_firstIncrement = true;
 };
 
 using VariableExpressionPtr = std::shared_ptr<VariableExpression>;
@@ -57,8 +58,9 @@ class ArithmeticExpression : public Expression
 public:
 	ArithmeticExpression(const ExpressionPtr &left, const ExpressionPtr &right);
 protected:
-	ExpressionPtr left;
-	ExpressionPtr right;
+	virtual bool Validate() const;
+	ExpressionPtr m_left;
+	ExpressionPtr m_right;
 };
 
 class AdditionExpression : public ArithmeticExpression
@@ -111,8 +113,8 @@ public:
 	AssignmentExpression(Parser *parser, const VariableExpressionPtr &var, const ExpressionPtr &value);
 	virtual double Evaluate() override;	
 private:
-	VariableExpressionPtr var;
-	ExpressionPtr value;
+	VariableExpressionPtr m_var;
+	ExpressionPtr m_value;
 };
 using AssignmentExpressionPtr = std::shared_ptr<AssignmentExpression>;
 
@@ -122,7 +124,7 @@ public:
 	FunctionCallExpression(Parser *parser, const std::string &func, const ExpressionPtr &value);
 	virtual double Evaluate() override;	
 private:
-	std::string function_name;
-	ExpressionPtr value;
+	std::string m_function_name;
+	ExpressionPtr m_value;
 };
 using FunctionCallExpressionPtr = std::shared_ptr<FunctionCallExpression>;

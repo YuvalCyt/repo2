@@ -1,6 +1,7 @@
 #include "Tokenizer.h"
 #include "Expression.h"
 #include "Parser.h"
+
 #include <cctype>
 
 Tokenizer::Tokenizer() {
@@ -9,7 +10,7 @@ Tokenizer::Tokenizer() {
 void 
 Tokenizer::SetStatement(const std::string &statement)
 {
-	str.str(statement);
+	m_strstrm.str(statement);
 	m_length = statement.length();
 	SetCurPos(0);
 }
@@ -19,11 +20,11 @@ Tokenizer::EvaluateNumber()
 {
 	SkipWhiteSpaces();
 	NumberExpressionPtr numExp;
-	char ch = str.peek();
+	char ch = m_strstrm.peek();
 	if (std::isdigit(ch)) 
 	{
-		double x;
-		str >> x;
+		double x(0.0);
+		m_strstrm >> x;
 		numExp = std::make_shared<NumberExpression>(x);
 	}
 	return numExp;
@@ -33,15 +34,15 @@ std::shared_ptr<VariableExpression>
 Tokenizer::EvalutateVariable() {
 	SkipWhiteSpaces();
 	VariableExpressionPtr valExp;
-	char ch = str.peek();
+	char ch = m_strstrm.peek();
 	std::string s;
 	bool bFirstChar=true;
 	while (std::isalpha(ch) || (!bFirstChar && !isspace(ch) && isalnum(ch)))  //todo: what about underscore?
 	{
 		bFirstChar = false;
-		ch = str.get();
+		ch = m_strstrm.get();
 		s += ch;
-		ch = str.peek();
+		ch = m_strstrm.peek();
 	}
 	if (s.length() > 0)
 	{
@@ -54,7 +55,7 @@ Tokenizer::EvalutateVariable() {
 ExpressionPtr 
 Tokenizer::EvaluatePrefixFunction()
 {
-	int curPos = str.tellg();
+	int curPos = m_strstrm.tellg();
 	SkipWhiteSpaces();
 	ExpressionPtr exp;
 	std::string prefix(GetPostPreFixType());
@@ -79,7 +80,7 @@ Tokenizer::EvaluatePrefixFunction()
 ExpressionPtr 
 Tokenizer::EvaluatePostfixFunction()
 {
-	int curPos = str.tellg();
+	int curPos = m_strstrm.tellg();
 	SkipWhiteSpaces();
 	ExpressionPtr exp;
 	std::string var_name(GetCurrentVariableName());
@@ -102,10 +103,10 @@ bool
 Tokenizer::EvaluateCharacter(char expected) {
 	SkipWhiteSpaces();
 	bool expectedChar = false;
-	char ch = str.peek();
+	char ch = m_strstrm.peek();
 	if (ch == expected) 
 	{
-		ch = str.get();
+		ch = m_strstrm.get();
 		expectedChar = true;
 	}
 
@@ -119,10 +120,10 @@ Tokenizer::EvaluateCharacters(const std::string &expected) {
 	bool expectedChars = false;
 	if (!ReachedEnd())
 	{
-		std::string s = str.str().substr(GetCurPos());
+		std::string s = m_strstrm.str().substr(GetCurPos());
 		if (s.find(expected) == 0)
 		{
-			str.seekg(GetCurPos() + expected.length());
+			m_strstrm.seekg(GetCurPos() + expected.length());
 			expectedChars = true;
 		}
 	}
@@ -132,26 +133,26 @@ Tokenizer::EvaluateCharacters(const std::string &expected) {
 
 int 
 Tokenizer::GetCurPos() {
-	return str.tellg();
+	return m_strstrm.tellg();
 }
 
 bool 
 Tokenizer::ReachedEnd() {
-	return str.eof();
+	return m_strstrm.eof();
 }
 
 void 
 Tokenizer::SetCurPos(int curPos) {
-	str.clear();
-	str.seekg(std::min(m_length, curPos));
+	m_strstrm.clear();
+	m_strstrm.seekg(std::min(m_length, curPos));
 }
 
 void 
 Tokenizer::SkipWhiteSpaces() {
-	char ch = str.peek();
+	char ch = m_strstrm.peek();
 	while (isspace(ch)) {
-		ch = str.get();
-		ch = str.peek();
+		ch = m_strstrm.get();
+		ch = m_strstrm.peek();
 	}
 }
 
