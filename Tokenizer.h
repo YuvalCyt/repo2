@@ -12,23 +12,24 @@ class Tokenizer
 {
 public:
 	Tokenizer();
-	void set_parser(Parser *parser) { m_parser = parser;}
-	void set_line(const std::string &line);
-	std::shared_ptr<NumberExpression> number();
-	std::shared_ptr<VariableExpression> variable();
-	std::shared_ptr<Expression> prefix_function();
-	std::shared_ptr<Expression> postfix_function();
-	bool character(char expected);
-	bool characters(const std::string &expected);
-	bool atEnd();
+	void SetParser(Parser *parser) { m_parser = parser;}
+	void SetStatement(const std::string &statement);
+	std::shared_ptr<NumberExpression> EvaluateNumber();
+	std::shared_ptr<VariableExpression> EvalutateVariable();
+	std::shared_ptr<Expression> EvaluatePrefixFunction();
+	std::shared_ptr<Expression> EvaluatePostfixFunction();
+	bool EvaluateCharacter(char expected);
+	bool EvaluateCharacters(const std::string &expected);
+	bool ReachedEnd();
 
-	int mark();
-	void reset(int mark);
+	int GetCurPos();
+	void SetCurPos(int mark);
 private:
 	std::stringstream str;
+	int m_length = -1;
 	Parser* m_parser = nullptr;
 
-	void skipWhiteSpace();
-	std::string get_current_variable_name();
-	std::string get_post_pre_fix_type();
+	void SkipWhiteSpaces();
+	std::string GetCurrentVariableName();
+	std::string GetPostPreFixType();
 };

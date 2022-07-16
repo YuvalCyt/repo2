@@ -13,20 +13,20 @@ NumberExpression::NumberExpression(double val)
 {
 }
 
-double NumberExpression::evaluate() {
+double NumberExpression::Evaluate() {
 	return value;
 }
 
 VariableExpression::VariableExpression(Parser *parser, const std::string& var) 
 	: variable(var)
 {
-	set_parser(parser);
+	SetParser(parser);
 }
 
-double VariableExpression::evaluate() {
+double VariableExpression::Evaluate() {
 	double res(0);
 	if (m_parser)
-		res = m_parser->lookup_variable(variable);
+		res = m_parser->LookupVariable(variable);
 	return res;
 }
 
@@ -36,12 +36,12 @@ PostfixVariableExpression::PostfixVariableExpression(Parser *parser, const std::
 {
 }
 
-double PostfixVariableExpression::evaluate() {
+double PostfixVariableExpression::Evaluate() {
 	double res(0);
 	if (m_parser)
 	{
-		res = m_parser->lookup_variable(getVar());
-		m_parser->record_variable(getVar(), m_inc ? res + 1 : res - 1); //flag for doing this once?
+		res = m_parser->LookupVariable(GetVariable());
+		m_parser->RecordVariable(GetVariable(), m_inc ? res + 1 : res - 1); //flag for doing this once?
 	}
 		
 	return res;
@@ -59,13 +59,13 @@ AdditionExpression::AdditionExpression(const ExpressionPtr &left, const Expressi
 }
 
 double 
-AdditionExpression::evaluate()
+AdditionExpression::Evaluate()
 {
 	if (left == nullptr || right == nullptr)
 		return 0;
 
-	double a = left->evaluate();
-	double b = right->evaluate();
+	double a = left->Evaluate();
+	double b = right->Evaluate();
 	return a+b;
 }
 
@@ -76,13 +76,13 @@ SubstractionExpression::SubstractionExpression(const ExpressionPtr &left, const 
 }
 
 double 
-SubstractionExpression::evaluate()
+SubstractionExpression::Evaluate()
 {
 	if (left == nullptr || right == nullptr)
 		return 0;
 
-	double a = left->evaluate();
-	double b = right->evaluate();
+	double a = left->Evaluate();
+	double b = right->Evaluate();
 	return a-b;
 }
 
@@ -93,13 +93,13 @@ MultiplicationExpression::MultiplicationExpression(const ExpressionPtr &left, co
 }
 
 double 
-MultiplicationExpression::evaluate()
+MultiplicationExpression::Evaluate()
 {
 	if (left == nullptr || right == nullptr)
 		return 0;
 
-	double a = left->evaluate();
-	double b = right->evaluate();
+	double a = left->Evaluate();
+	double b = right->Evaluate();
 	return a*b;
 }
 
@@ -110,13 +110,13 @@ DivisionExpression::DivisionExpression(const ExpressionPtr &left, const Expressi
 }
 
 double 
-DivisionExpression::evaluate()
+DivisionExpression::Evaluate()
 {
 	if (left == nullptr || right == nullptr)
 		return 0;
 
-	double a = left->evaluate();
-	double b = right->evaluate();
+	double a = left->Evaluate();
+	double b = right->Evaluate();
 	//todo: check b?
 	return a/b;
 }
@@ -128,13 +128,13 @@ ModulusExpression::ModulusExpression(const ExpressionPtr &left, const Expression
 }
 
 double 
-ModulusExpression::evaluate()
+ModulusExpression::Evaluate()
 {
 	if (left == nullptr || right == nullptr)
 		return 0;
 
-	double a = left->evaluate();
-	double b = right->evaluate();
+	double a = left->Evaluate();
+	double b = right->Evaluate();
 	//todo: check b?
 	return std::fmod(a, b);
 }
@@ -146,44 +146,44 @@ ExponentiationExpression::ExponentiationExpression(const ExpressionPtr &left, co
 }
 
 double 
-ExponentiationExpression::evaluate()
+ExponentiationExpression::Evaluate()
 {
 	if (left == nullptr || right == nullptr)
 		return 0;
 
-	double a = left->evaluate();
-	double b = right->evaluate();
+	double a = left->Evaluate();
+	double b = right->Evaluate();
 	return std::pow(a, b);
 }
 
 AssignmentExpression::AssignmentExpression(Parser *parser, const VariableExpressionPtr &v, const ExpressionPtr &val)
 	: var(v), value(val)
 {
-	set_parser(parser);
+	SetParser(parser);
 }
 
 
-double AssignmentExpression::evaluate() {
+double AssignmentExpression::Evaluate() {
 	double x = 0;
 	if (value)
-		x = value->evaluate();
+		x = value->Evaluate();
 	if (var) 
-		m_parser->record_variable(var->getVar(), x);
+		m_parser->RecordVariable(var->GetVariable(), x);
 	return x;
 }
 
 FunctionCallExpression::FunctionCallExpression(Parser *parser, const std::string &func, const ExpressionPtr &val)
 	: function_name(func), value(val)
 {
-	set_parser(parser);
+	SetParser(parser);
 }
 
 double 
-FunctionCallExpression::evaluate()
+FunctionCallExpression::Evaluate()
 {
 	double x(0);
 	if (value)
-		x = value->evaluate();
-	x = m_parser->evaluate_function(function_name, x);
+		x = value->Evaluate();
+	x = m_parser->EvaluateFunction(function_name, x);
 	return x;
 }

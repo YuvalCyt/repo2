@@ -7,8 +7,8 @@
 
 Parser::Parser()
 {
-	tokens.set_parser(this);
-	build_functions_map();
+	m_tokenizer.SetParser(this);
+	BuildFunctionsMap();
 }
 
 Parser::~Parser()
@@ -16,13 +16,38 @@ Parser::~Parser()
 }
 
 void
-Parser::set_line(const std::string &line)
+Parser::AddStatement(std::string &statement)
 {
-	tokens.set_line(line);
+	m_statements.emplace_back(std::move(statement));
 }
 
 void
-Parser::build_functions_map()
+Parser::EvaluateStatements()
+{
+	for (const std::string &statement : m_statements)
+	{
+		m_tokenizer.SetStatement(statement); 
+		ExpressionPtr exp = this->EvaluateStatement();
+		if (exp)
+		{
+			exp->Evaluate();
+		}
+		else
+		{
+			//error?
+		}
+	}
+}
+
+//todo: remove function
+void
+Parser::set_line(const std::string &line)
+{
+	m_tokenizer.SetStatement(line);
+}
+
+void
+Parser::BuildFunctionsMap()
 {
 	typedef double (*DoubleFuncPtr)(double);
 	m_funcs.insert(std::make_pair("sin", static_cast<DoubleFuncPtr>(std::sin)));
@@ -37,7 +62,7 @@ Parser::build_functions_map()
 }
 
 double 
-Parser::lookup_variable(const std::string& var) const
+Parser::LookupVariable(const std::string& var) const
 {
 	double res(0);
 	for (const auto &varEntry : m_vars)
@@ -50,43 +75,41 @@ Parser::lookup_variable(const std::string& var) const
 }
 
 std::vector<std::string>
-Parser::get_variable_names() const
+Parser::GetVariableNames() const
 {
 	std::vector<std::string> names;
 	names.reserve(m_vars.size());
 	for (const auto &varEntry : m_vars)
 		names.push_back(varEntry.m_name);
 
-	std::sort(names.begin(), names.end(), [] (const std::string& first, const std::string& second){
-        return first.size() > second.size();
+	std::sort(names.begin(), names.end(), 
+		[] (const std::string& first, const std::string& second){
+        	return first.size() > second.size();
     });
 
 	return names;
 }
 
 void 
-Parser::print_variables() const
+Parser::PrintVariables() const
 {
 	std::cout << "(";
 	bool first = true;
 	for (const auto &varEntry: m_vars) 
 	{
    		if (first) 
-		{ 
 			first = false; 
-		} else 
-		{ 
+		else 
 			std::cout << ","; 
-		}
+			
 		std::cout << varEntry.m_name << "=" << varEntry.m_value; 
 	}
 
 	std::cout << ")" << std::endl;
-	
 }
 
 void 
-Parser::record_variable(const std::string& var, double value)
+Parser::RecordVariable(const std::string& var, double value)
 {
 	for (auto &varEntry: m_vars) 
 	{
@@ -101,7 +124,7 @@ Parser::record_variable(const std::string& var, double value)
 }
 
 double 
-Parser::evaluate_function(const std::string &function_name, double value) const
+Parser::EvaluateFunction(const std::string &function_name, double value) const
 {
 	double res(0);
 	auto find = m_funcs.find(function_name);
@@ -111,30 +134,30 @@ Parser::evaluate_function(const std::string &function_name, double value) const
 	return res;
 }
 
-ExpressionPtr Parser::statement() {
-	ExpressionPtr exp(assignment());
+ExpressionPtr Parser::EvaluateStatement() {
+	ExpressionPtr exp(EvaluateAssignment());
 	if (!exp)
-		exp = calculation();
+		exp = EvaluateCalculation();
 	return exp;
 }
 
-ExpressionPtr Parser::assignment()
+ExpressionPtr Parser::EvaluateAssignment()
 {
-	int mark = tokens.mark();
+	int curPos = m_tokenizer.GetCurPos();
 	ExpressionPtr exp;
 
-	std::shared_ptr<VariableExpression> var(tokens.variable());
+	std::shared_ptr<VariableExpression> var(m_tokenizer.EvalutateVariable());
 	ExpressionPtr rhs;
 	if (var)
 	{
-		if (tokens.character('=') && (rhs=sum()) && tokens.atEnd()) 
+		if (m_tokenizer.EvaluateCharacter('=') && (rhs=EvaluateSum()) && m_tokenizer.ReachedEnd()) 
 			exp = std::make_shared<AssignmentExpression>(this, var, rhs);
 		else
 		{
 			ExpressionPtr newRhs;
 			bool varExist(false);
 			for (const auto &varEntry : m_vars)
-				if (varEntry.m_name == var->getVar())
+				if (varEntry.m_name == var->GetVariable())
 				{
 					varExist = true;
 					break;
@@ -143,27 +166,27 @@ ExpressionPtr Parser::assignment()
 			if (varExist)
 			{
 				//can do such operation for defined variables only
-				if (tokens.characters("+=") && (rhs=sum()) && tokens.atEnd())
+				if (m_tokenizer.EvaluateCharacters("+=") && (rhs=EvaluateSum()) && m_tokenizer.ReachedEnd())
 				{
 					newRhs = std::make_shared<AdditionExpression>(var, rhs);
 				}
-				else if (tokens.characters("-=") && (rhs=sum()) && tokens.atEnd())
+				else if (m_tokenizer.EvaluateCharacters("-=") && (rhs=EvaluateSum()) && m_tokenizer.ReachedEnd())
 				{
 					newRhs = std::make_shared<SubstractionExpression>(var, rhs);
 				}
-				else if (tokens.characters("*=") && (rhs=sum()) && tokens.atEnd())
+				else if (m_tokenizer.EvaluateCharacters("*=") && (rhs=EvaluateSum()) && m_tokenizer.ReachedEnd())
 				{
 					newRhs = std::make_shared<MultiplicationExpression>(var, rhs);
 				}
-				else if (tokens.characters("/=") && (rhs=sum()) && tokens.atEnd())
+				else if (m_tokenizer.EvaluateCharacters("/=") && (rhs=EvaluateSum()) && m_tokenizer.ReachedEnd())
 				{
 					newRhs = std::make_shared<DivisionExpression>(var, rhs);
 				}
-				else if (tokens.characters("^=") && (rhs=sum()) && tokens.atEnd())
+				else if (m_tokenizer.EvaluateCharacters("^=") && (rhs=EvaluateSum()) && m_tokenizer.ReachedEnd())
 				{
 					newRhs = std::make_shared<ExponentiationExpression>(var, rhs);
 				}
-				else if (tokens.characters("%=") && (rhs=sum()) && tokens.atEnd())
+				else if (m_tokenizer.EvaluateCharacters("%=") && (rhs=EvaluateSum()) && m_tokenizer.ReachedEnd())
 				{
 					newRhs = std::make_shared<ModulusExpression>(var, rhs);
 				}
@@ -175,38 +198,38 @@ ExpressionPtr Parser::assignment()
 		
 	}
 	if (!exp)
-		tokens.reset(mark);
+		m_tokenizer.SetCurPos(curPos);
 	return exp;
 }
 
-ExpressionPtr Parser::calculation()
+ExpressionPtr Parser::EvaluateCalculation()
 {
 	ExpressionPtr result;
-	if ((result=sum()) && tokens.atEnd())
+	if ((result=EvaluateSum()) && m_tokenizer.ReachedEnd())
 		return result;
 	if(result) 
 		result = nullptr;
 	return result;
 }
 
-ExpressionPtr Parser::sum()
+ExpressionPtr Parser::EvaluateSum()
 {
-	int mark = tokens.mark();
-	ExpressionPtr lhs = product();
+	int curPos = m_tokenizer.GetCurPos();
+	ExpressionPtr lhs = EvaluateProduct();
 	ExpressionPtr rhs;
 
 	while (lhs) 
 	{
-		if (tokens.character('+')) {
-			rhs=product();
+		if (m_tokenizer.EvaluateCharacter('+')) {
+			rhs=EvaluateProduct();
 			if (rhs)
 				lhs = std::make_shared<AdditionExpression>(lhs, rhs);
 			else 
 				lhs = nullptr;
 		}
-		else if (tokens.character('-')) 
+		else if (m_tokenizer.EvaluateCharacter('-')) 
 		{
-			rhs=product();
+			rhs=EvaluateProduct();
 			if (rhs)
 				lhs = std::make_shared<SubstractionExpression>(lhs, rhs);
 			else 
@@ -217,31 +240,31 @@ ExpressionPtr Parser::sum()
 	}
 
 	if (lhs == nullptr)
-		tokens.reset(mark);
+		m_tokenizer.SetCurPos(curPos);
 	return lhs;
 }
 
-ExpressionPtr Parser::product()
+ExpressionPtr Parser::EvaluateProduct()
 {
-	int mark = tokens.mark();
-	ExpressionPtr lhs = factor();
+	int curPos = m_tokenizer.GetCurPos();
+	ExpressionPtr lhs = EvaluateFactor();
 	ExpressionPtr rhs;
 	while (lhs) 
 	{
-		if (tokens.character('*')) {
-			if (rhs=factor())
+		if (m_tokenizer.EvaluateCharacter('*')) {
+			if (rhs=EvaluateFactor())
 				lhs = std::make_shared<MultiplicationExpression>(lhs, rhs);
 			else 
 				lhs = nullptr;
 		}
-		else if (tokens.character('/')) {
-			if (rhs=factor())
+		else if (m_tokenizer.EvaluateCharacter('/')) {
+			if (rhs=EvaluateFactor())
 				lhs = std::make_shared<DivisionExpression>(lhs, rhs);
 			else 
 				lhs = nullptr;
 		}
-		else if (tokens.character('%')){
-			if (rhs=factor())
+		else if (m_tokenizer.EvaluateCharacter('%')){
+			if (rhs=EvaluateFactor())
 				lhs = std::make_shared<ModulusExpression>(lhs, rhs);
 			else 
 				lhs = nullptr;
@@ -250,77 +273,77 @@ ExpressionPtr Parser::product()
 			break;
 	}
 	if (!lhs)
-		tokens.reset(mark); 
+		m_tokenizer.SetCurPos(curPos); 
 	return lhs;
 }
 
-ExpressionPtr Parser::factor() {
+ExpressionPtr Parser::EvaluateFactor() {
 	ExpressionPtr exp = nullptr;
-	if ((exp=power()) || (exp=term()))
+	if ((exp=EvaluatePower()) || (exp=EvaluateTerm()))
 		;
 	return exp;
 }
 
-ExpressionPtr Parser::power()
+ExpressionPtr Parser::EvaluatePower()
 {
-	int mark = tokens.mark();
+	int curPos = m_tokenizer.GetCurPos();
 	ExpressionPtr exp;
-	if (exp=function())
+	if (exp=EvaluateFunction())
 		return exp;
 	ExpressionPtr lhs;
 	ExpressionPtr rhs;
-	if ((lhs=term()) && tokens.character('^') && (rhs=factor()))
+	if ((lhs=EvaluateTerm()) && m_tokenizer.EvaluateCharacter('^') && (rhs=EvaluateFactor()))
 		exp = std::make_shared<ExponentiationExpression>(lhs, rhs);
 	else
-		tokens.reset(mark);
+		m_tokenizer.SetCurPos(curPos);
 	return exp;
 }
 
-ExpressionPtr Parser::term()
+ExpressionPtr Parser::EvaluateTerm()
 {
 	ExpressionPtr exp;
-	if ((exp=group()) || (exp=function()) || (exp=tokens.variable()) || (exp=tokens.number()))
+	if ((exp=EvaluateGroup()) || (exp=EvaluateFunction()) || (exp=m_tokenizer.EvalutateVariable()) || (exp=m_tokenizer.EvaluateNumber()))
 		;
 	return exp;
 }
 
-ExpressionPtr Parser::group() {
-	int mark = tokens.mark();
+ExpressionPtr Parser::EvaluateGroup() {
+	int curPos = m_tokenizer.GetCurPos();
 	ExpressionPtr exp;
-	if (tokens.character('(') && (exp=sum()) && (tokens.character(')')))
+	if (m_tokenizer.EvaluateCharacter('(') && (exp=EvaluateSum()) && (m_tokenizer.EvaluateCharacter(')')))
 		return exp;
 	else
 	{
 		exp = nullptr;
-		tokens.reset(mark);
+		m_tokenizer.SetCurPos(curPos);
 	}
 
 	return exp;
 }
 
-ExpressionPtr Parser::function()
+ExpressionPtr Parser::EvaluateFunction()
 {
-	int mark = tokens.mark();
+	int curPos = m_tokenizer.GetCurPos();
 	ExpressionPtr func_exp, exp;
-	if ((exp=tokens.prefix_function()) || (exp=tokens.postfix_function()))
+	if ((exp=m_tokenizer.EvaluatePrefixFunction()) || (exp=m_tokenizer.EvaluatePostfixFunction()))
 		return exp;
 	std::string func_name;
 	for (const auto &func_pair : m_funcs)
 	{
-		if (tokens.characters(func_pair.first))
+		if (m_tokenizer.EvaluateCharacters(func_pair.first))
 		{
 			func_name = func_pair.first;
 			break;
 		}
 	}
 
-	if (!func_name.empty() && tokens.character('(') && (exp=sum()) && (tokens.character(')')))
+	if (!func_name.empty() && m_tokenizer.EvaluateCharacter('(') && (exp=EvaluateSum()) && (m_tokenizer.EvaluateCharacter(')')))
 	{
 		func_exp = std::make_shared<FunctionCallExpression>(this, func_name, exp);
 	}
 	else
 	{
-		tokens.reset(mark);
+		m_tokenizer.SetCurPos(curPos);
 	}
 
 	return func_exp;

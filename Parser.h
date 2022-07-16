@@ -24,35 +24,35 @@ public:
 	};
 	Parser();
 	~Parser();
+	void AddStatement(std::string &statement);
+	void EvaluateStatements();
 	void set_line(const std::string &line);
 
-	ExpressionPtr statement();
+	ExpressionPtr EvaluateStatement();
 
-	void print_variables() const;
-	double lookup_variable(const std::string& var) const;
-	void record_variable(const std::string& var, double value);
-	std::vector<std::string> get_variable_names() const;
+	void PrintVariables() const;
+	double LookupVariable(const std::string& var) const;
+	void RecordVariable(const std::string& var, double value);
+	std::vector<std::string> GetVariableNames() const;
 
-	double evaluate_function(const std::string &function_name, double value) const;
+	double EvaluateFunction(const std::string &function_name, double value) const;
 
 protected:
-	ExpressionPtr assignment();
-	ExpressionPtr calculation();
-	ExpressionPtr sum();
-	ExpressionPtr product();
-	ExpressionPtr factor();
-	ExpressionPtr power();
-	ExpressionPtr term();
-	ExpressionPtr group();
-	ExpressionPtr function();
-	//ExpressionPtr prefix_function();
-	//ExpressionPtr postfix_function();
+	ExpressionPtr EvaluateAssignment();
+	ExpressionPtr EvaluateCalculation();
+	ExpressionPtr EvaluateSum();
+	ExpressionPtr EvaluateProduct();
+	ExpressionPtr EvaluateFactor();
+	ExpressionPtr EvaluatePower();
+	ExpressionPtr EvaluateTerm();
+	ExpressionPtr EvaluateGroup();
+	ExpressionPtr EvaluateFunction();
 
 private:
 
-	void build_functions_map();
-	Tokenizer tokens;
-
+	void BuildFunctionsMap();
+	Tokenizer m_tokenizer;
+	std::vector<std::string> m_statements;
 	std::vector<VarEntry> m_vars;
 	std::map<std::string, std::function<double(double)>> m_funcs;
 };

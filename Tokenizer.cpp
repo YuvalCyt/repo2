@@ -7,15 +7,17 @@ Tokenizer::Tokenizer() {
 }
 
 void 
-Tokenizer::set_line(const std::string &line)
+Tokenizer::SetStatement(const std::string &statement)
 {
-	str.str(line);
-	reset(0);
+	str.str(statement);
+	m_length = statement.length();
+	SetCurPos(0);
 }
 
-std::shared_ptr<NumberExpression> Tokenizer::number()
+std::shared_ptr<NumberExpression> 
+Tokenizer::EvaluateNumber()
 {
-	skipWhiteSpace();
+	SkipWhiteSpaces();
 	NumberExpressionPtr numExp;
 	char ch = str.peek();
 	if (std::isdigit(ch)) 
@@ -27,8 +29,9 @@ std::shared_ptr<NumberExpression> Tokenizer::number()
 	return numExp;
 }
 
-std::shared_ptr<VariableExpression> Tokenizer::variable() {
-	skipWhiteSpace();
+std::shared_ptr<VariableExpression> 
+Tokenizer::EvalutateVariable() {
+	SkipWhiteSpaces();
 	VariableExpressionPtr valExp;
 	char ch = str.peek();
 	std::string s;
@@ -48,53 +51,56 @@ std::shared_ptr<VariableExpression> Tokenizer::variable() {
 	return valExp;
 }
 
-std::shared_ptr<Expression> Tokenizer::prefix_function()
+ExpressionPtr 
+Tokenizer::EvaluatePrefixFunction()
 {
-	int mark = str.tellg();
-	skipWhiteSpace();
+	int curPos = str.tellg();
+	SkipWhiteSpaces();
 	ExpressionPtr exp;
-	std::string prefix(get_post_pre_fix_type());
+	std::string prefix(GetPostPreFixType());
 	if (!prefix.empty())
 	{
-		std::string var_name(get_current_variable_name());
+		std::string var_name(GetCurrentVariableName());
 		if (!var_name.empty())
 		{
 			double addedValue = prefix == "++" ? 1 : -1;
-			m_parser->record_variable(var_name, m_parser->lookup_variable(var_name) + addedValue);
+			m_parser->RecordVariable(var_name, m_parser->LookupVariable(var_name) + addedValue);
 			exp = std::make_shared<VariableExpression>(m_parser, var_name);	
-			mark += var_name.length() + prefix.length() + 1;
+			curPos += var_name.length() + prefix.length() + 1;
 		}
 	}
 
-	reset(mark);
+	SetCurPos(curPos);
 
 	return exp;
 }
 
 
-ExpressionPtr Tokenizer::postfix_function()
+ExpressionPtr 
+Tokenizer::EvaluatePostfixFunction()
 {
-	int mark = str.tellg();
-	skipWhiteSpace();
+	int curPos = str.tellg();
+	SkipWhiteSpaces();
 	ExpressionPtr exp;
-	std::string var_name(get_current_variable_name());
+	std::string var_name(GetCurrentVariableName());
 	if (!var_name.empty())
 	{
-		std::string postfix = get_post_pre_fix_type();
+		std::string postfix = GetPostPreFixType();
 		if (!postfix.empty())
 		{
 			exp = std::make_shared<PostfixVariableExpression>(m_parser, var_name, postfix == "++");	
-			mark += var_name.length() + postfix.length() + 1;
+			curPos += var_name.length() + postfix.length() + 1;
 		}
 	}
 
-	reset(mark);
+	SetCurPos(curPos);
 
 	return exp;
 }
 
-bool Tokenizer::character(char expected) {
-	skipWhiteSpace();
+bool
+Tokenizer::EvaluateCharacter(char expected) {
+	SkipWhiteSpaces();
 	bool expectedChar = false;
 	char ch = str.peek();
 	if (ch == expected) 
@@ -106,16 +112,17 @@ bool Tokenizer::character(char expected) {
 	return expectedChar;
 }
 
-bool Tokenizer::characters(const std::string &expected) {
-	skipWhiteSpace();
+bool 
+Tokenizer::EvaluateCharacters(const std::string &expected) {
+	SkipWhiteSpaces();
 	
 	bool expectedChars = false;
-	if (!atEnd())
+	if (!ReachedEnd())
 	{
-		std::string s = str.str().substr(mark());
+		std::string s = str.str().substr(GetCurPos());
 		if (s.find(expected) == 0)
 		{
-			str.seekg(mark() + expected.length());
+			str.seekg(GetCurPos() + expected.length());
 			expectedChars = true;
 		}
 	}
@@ -123,20 +130,24 @@ bool Tokenizer::characters(const std::string &expected) {
 	return expectedChars;
 }
 
-int Tokenizer::mark() {
+int 
+Tokenizer::GetCurPos() {
 	return str.tellg();
 }
 
-bool Tokenizer::atEnd() {
+bool 
+Tokenizer::ReachedEnd() {
 	return str.eof();
 }
 
-void Tokenizer::reset(int mark) {
+void 
+Tokenizer::SetCurPos(int curPos) {
 	str.clear();
-	str.seekg(mark);
+	str.seekg(std::min(m_length, curPos));
 }
 
-void Tokenizer::skipWhiteSpace() {
+void 
+Tokenizer::SkipWhiteSpaces() {
 	char ch = str.peek();
 	while (isspace(ch)) {
 		ch = str.get();
@@ -145,13 +156,13 @@ void Tokenizer::skipWhiteSpace() {
 }
 
 std::string 
-Tokenizer::get_current_variable_name()
+Tokenizer::GetCurrentVariableName()
 {
 	std::string var_name;
-	std::vector<std::string> names(m_parser->get_variable_names());
+	std::vector<std::string> names(m_parser->GetVariableNames());
 	for (std::string &name : names)
 	{
-		if (characters(name))
+		if (EvaluateCharacters(name))
 		{
 			var_name = std::move(name);
 			break;
@@ -162,12 +173,12 @@ Tokenizer::get_current_variable_name()
 }
 
 std::string
-Tokenizer::get_post_pre_fix_type()
+Tokenizer::GetPostPreFixType()
 {
 	std::string postfix;
 	for (const std::string &postfix_type : {std::string("++"), std::string("--")})
 	{
-		if (characters(postfix_type))
+		if (EvaluateCharacters(postfix_type))
 		{
 			postfix = postfix_type;
 			break;
