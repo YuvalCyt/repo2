@@ -14,16 +14,11 @@ int main()
 		if (line.length() == 0)
 			break;
 		
-		p.set_line(line);
-		ExpressionPtr e = p.statement();
-		if (e) 
-		{
-			std::cout << e->evaluate() << std::endl;
-		}
-		else
-			std::cout << "Error" << std::endl;		
-	}
-	
-	p.print_variables();
+		p.AddStatement(line);	
+	}	
+
+	p.EvaluateStatements();
+	p.PrintVariables();
+
 	return 0;
 }
