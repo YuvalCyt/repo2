@@ -1,6 +1,7 @@
 #include "Expression.h"
 #include "Parser.h"
 #include "Tokenizer.h"
+#include "unittests.h"
 
 #include <iostream>
 
@@ -19,6 +20,6 @@ int main()
 
 	p.EvaluateStatements();
 	p.PrintVariables();
-
+	unittests::UnitTests::RunUnitTests();
 	return 0;
 }
