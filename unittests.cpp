@@ -138,6 +138,55 @@ bool test_case6()
 	return evaluate_and_compare(statements, expectedValues);
 }
 
+bool test_case7()
+{
+	std::vector<std::string> statements {
+		std::string("a=0"), std::string("a++"), std::string("++a"), 
+		std::string("b=a"), std::string("b--"), std::string("--b"),
+		std::string("c=0"), std::string("c+=a"), std::string("c-=b"),
+		std::string("d=c++"), 
+		std::string("e=d"), std::string("e=(++d)"),
+	};
+
+	std::map<std::string, double> expectedValues {
+		{std::string("a"), 2}, {std::string("b"), 0}, {std::string("c"), 3},
+		{std::string("d"), 4}, {std::string("e"), 4}
+	};
+
+	return evaluate_and_compare(statements, expectedValues);
+}
+
+bool test_case8()
+{
+	std::vector<std::string> statements {
+		std::string("a=sin(cos(60))"), std::string("b=cos(sin(60))"), std::string("c=tan(sin(60))"), 
+		std::string("d=ceil(floor(5.5))"), std::string("e=floor(ceil(5.5))")
+	};
+
+	std::map<std::string, double> expectedValues {
+		{std::string("a"), sin(cos(60))}, {std::string("b"), cos(sin(60))}, {std::string("c"), tan(sin(60))},
+		{std::string("d"), ceil(floor(5.5))}, {std::string("e"), floor(ceil(5.5))}
+	};
+
+	return evaluate_and_compare(statements, expectedValues);
+}
+
+bool test_case9()
+{
+	std::vector<std::string> statements {
+		std::string("a=1+2+3+4+5+6"), std::string("b=1*2*3*4*5*6"), std::string("c=100 * 100 / (5 + 200) * 3 / 2"), 
+		std::string("d=(1.0/2.0)/3.0")
+	};
+
+	double c = 100.0 * 100.0 / (5.0 + 200.0) * 3.0 / 2.0;
+	std::map<std::string, double> expectedValues {
+		{std::string("a"), 1+2+3+4+5+6}, {std::string("b"), 1*2*3*4*5*6}, {std::string("c"), c},
+	 	{std::string("d") ,(1.0/2.0)/3.0}
+	};
+
+	return evaluate_and_compare(statements, expectedValues);
+}
+
 
 void UnitTests::RunUnitTests()
 {
@@ -150,6 +199,9 @@ void UnitTests::RunUnitTests()
 	test_case4() ? ++passed : ++failed;
 	test_case5() ? ++passed : ++failed;
 	test_case6() ? ++passed : ++failed;
+	test_case7() ? ++passed : ++failed;
+	test_case8() ? ++passed : ++failed;
+	test_case9() ? ++passed : ++failed;
 
 	std::cout << "Ran  " << passed+failed <<" tests" << std::endl;
 	std::cout << passed << " tests passed" << std::endl;
