@@ -69,7 +69,7 @@ Tokenizer::EvaluatePrefixFunction()
 			double addedValue = prefix == "++" ? 1 : -1;
 			m_parser->RecordVariable(var_name, m_parser->LookupVariable(var_name) + addedValue);
 			exp = std::make_shared<VariableExpression>(m_parser, var_name);	
-			curPos += var_name.length() + prefix.length() + 1;
+			curPos +=  prefix.length() + var_name.length();
 		}
 	}
 
@@ -92,7 +92,7 @@ Tokenizer::EvaluatePostfixFunction()
 		if (!postfix.empty())
 		{
 			exp = std::make_shared<PostfixVariableExpression>(m_parser, var_name, postfix == "++");	
-			curPos += var_name.length() + postfix.length() + 1;
+			curPos += var_name.length() + postfix.length();
 		}
 	}
 
