@@ -31,28 +31,6 @@ double VariableExpression::Evaluate()
 	return res;
 }
 
-PostfixVariableExpression::PostfixVariableExpression(Parser *parser, const std::string& var, bool inc) 
-	: VariableExpression(parser, var)
-	, m_inc(inc)
-{
-}
-
-double PostfixVariableExpression::Evaluate() 
-{
-	double res(0);
-	if (m_parser)
-	{
-		res = m_parser->LookupVariable(GetVariable());
-		if (m_firstIncrement)
-		{
-			m_parser->RecordVariable(GetVariable(), m_inc ? res + 1 : res - 1);
-			m_firstIncrement = false;
-		}
-	}
-		
-	return res;
-}
-
 ArithmeticExpression::ArithmeticExpression(const ExpressionPtr &l, const ExpressionPtr &r)
 	: m_left(l), m_right(r)
 {

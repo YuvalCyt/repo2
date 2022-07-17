@@ -50,23 +50,7 @@ private:
 	std::string variable;
 };
 
-
 using VariableExpressionPtr = std::shared_ptr<VariableExpression>;
-
-/*
-	PostfixVariableExpression class represents a variable that applies the postfix operator on it
-*/
-class PostfixVariableExpression : public VariableExpression
-{
-public:
-	PostfixVariableExpression(Parser *parser, const std::string& var, bool inc);
-	virtual double Evaluate() override;
-private:
-	bool m_inc;
-	bool m_firstIncrement = true;
-};
-
-using PostfixVariableExpressionPtr = std::shared_ptr<PostfixVariableExpression>;
 
 /*
 	ArithmeticExpression class represents a binary operation of 2 expressions
