@@ -131,7 +131,7 @@ ExpressionPtr Parser::EvaluateStatement() {
 
 ExpressionPtr Parser::EvaluateAssignment()
 {
-	int curPos = m_tokenizer.GetCurPos();
+	int curPos = m_tokenizer.GetCurrentPosition();
 	ExpressionPtr exp;
 
 	std::shared_ptr<VariableExpression> var(m_tokenizer.EvalutateVariable());
@@ -186,7 +186,7 @@ ExpressionPtr Parser::EvaluateAssignment()
 		
 	}
 	if (!exp)
-		m_tokenizer.SetCurPos(curPos);
+		m_tokenizer.SetCurrenPosition(curPos);
 	return exp;
 }
 
@@ -202,7 +202,7 @@ ExpressionPtr Parser::EvaluateCalculation()
 
 ExpressionPtr Parser::EvaluateSum()
 {
-	int curPos = m_tokenizer.GetCurPos();
+	int curPos = m_tokenizer.GetCurrentPosition();
 	ExpressionPtr lhs = EvaluateProduct();
 	ExpressionPtr rhs;
 
@@ -228,13 +228,13 @@ ExpressionPtr Parser::EvaluateSum()
 	}
 
 	if (lhs == nullptr)
-		m_tokenizer.SetCurPos(curPos);
+		m_tokenizer.SetCurrenPosition(curPos);
 	return lhs;
 }
 
 ExpressionPtr Parser::EvaluateProduct()
 {
-	int curPos = m_tokenizer.GetCurPos();
+	int curPos = m_tokenizer.GetCurrentPosition();
 	ExpressionPtr lhs = EvaluateFactor();
 	ExpressionPtr rhs;
 	while (lhs) 
@@ -261,7 +261,7 @@ ExpressionPtr Parser::EvaluateProduct()
 			break;
 	}
 	if (!lhs)
-		m_tokenizer.SetCurPos(curPos); 
+		m_tokenizer.SetCurrenPosition(curPos); 
 	return lhs;
 }
 
@@ -274,7 +274,7 @@ ExpressionPtr Parser::EvaluateFactor() {
 
 ExpressionPtr Parser::EvaluatePower()
 {
-	int curPos = m_tokenizer.GetCurPos();
+	int curPos = m_tokenizer.GetCurrentPosition();
 	ExpressionPtr exp;
 	if (exp=EvaluateFunction())
 		return exp;
@@ -283,7 +283,7 @@ ExpressionPtr Parser::EvaluatePower()
 	if ((lhs=EvaluateTerm()) && m_tokenizer.EvaluateCharacter('^') && (rhs=EvaluateFactor()))
 		exp = std::make_shared<ExponentiationExpression>(lhs, rhs);
 	else
-		m_tokenizer.SetCurPos(curPos);
+		m_tokenizer.SetCurrenPosition(curPos);
 	return exp;
 }
 
@@ -296,14 +296,14 @@ ExpressionPtr Parser::EvaluateTerm()
 }
 
 ExpressionPtr Parser::EvaluateGroup() {
-	int curPos = m_tokenizer.GetCurPos();
+	int curPos = m_tokenizer.GetCurrentPosition();
 	ExpressionPtr exp;
 	if (m_tokenizer.EvaluateCharacter('(') && (exp=EvaluateSum()) && (m_tokenizer.EvaluateCharacter(')')))
 		return exp;
 	else
 	{
 		exp = nullptr;
-		m_tokenizer.SetCurPos(curPos);
+		m_tokenizer.SetCurrenPosition(curPos);
 	}
 
 	return exp;
@@ -311,7 +311,7 @@ ExpressionPtr Parser::EvaluateGroup() {
 
 ExpressionPtr Parser::EvaluateFunction()
 {
-	int curPos = m_tokenizer.GetCurPos();
+	int curPos = m_tokenizer.GetCurrentPosition();
 	ExpressionPtr func_exp, exp;
 	if ((exp=m_tokenizer.EvaluatePrefixFunction()) || (exp=m_tokenizer.EvaluatePostfixFunction()))
 		return exp;
@@ -331,7 +331,7 @@ ExpressionPtr Parser::EvaluateFunction()
 	}
 	else
 	{
-		m_tokenizer.SetCurPos(curPos);
+		m_tokenizer.SetCurrenPosition(curPos);
 	}
 
 	return func_exp;

@@ -21,8 +21,8 @@ class Expression;
 	Power -> Function | Term '^' Factor
 	Term -> Group | Variable | Number
 	Function -> PrefixFunction | PostFixFunction | FunctionCall
-	PrefixFunction -> ++'Variable'
-	PostFixFunction -> 'Variable'++
+	PrefixFunction -> 'Variable' + 1
+	PostFixFunction -> 'Variable'
 	FunctionCall -> FunctionName '(' Sum ')'
 	Group -> '(' Sum ')'
 */
