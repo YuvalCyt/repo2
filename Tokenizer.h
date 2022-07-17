@@ -41,10 +41,10 @@ public:
 	bool ReachedEnd() const;
 
 	//Get the current position of what was being read from the statement
-	int GetCurPos();
+	int GetCurrentPosition();
 
 	//Set the current position of what was being read from the statement
-	void SetCurPos(int mark);
+	void SetCurrenPosition(int mark);
 private:
 	std::stringstream m_strstrm;
 	int m_length = -1;
