@@ -4,7 +4,8 @@
 
 #include <cctype>
 
-Tokenizer::Tokenizer() {
+Tokenizer::Tokenizer() 
+{
 }
 
 void 
@@ -20,8 +21,8 @@ Tokenizer::EvaluateNumber()
 {
 	SkipWhiteSpaces();
 	NumberExpressionPtr numExp;
-	char ch = m_strstrm.peek();
-	if (std::isdigit(ch)) 
+	char curChar = m_strstrm.peek();
+	if (std::isdigit(curChar)) 
 	{
 		double x(0.0);
 		m_strstrm >> x;
@@ -31,18 +32,19 @@ Tokenizer::EvaluateNumber()
 }
 
 std::shared_ptr<VariableExpression> 
-Tokenizer::EvalutateVariable() {
+Tokenizer::EvalutateVariable() 
+{
 	SkipWhiteSpaces();
 	VariableExpressionPtr valExp;
-	char ch = m_strstrm.peek();
+	char curChar = m_strstrm.peek();
 	std::string s;
 	bool bFirstChar=true;
-	while (std::isalpha(ch) || (!bFirstChar && !isspace(ch) && isalnum(ch)))  //todo: what about underscore?
+	while (std::isalpha(curChar) || (!bFirstChar && !isspace(curChar) && isalnum(curChar)))  //todo: what about underscore?
 	{
 		bFirstChar = false;
-		ch = m_strstrm.get();
-		s += ch;
-		ch = m_strstrm.peek();
+		curChar = m_strstrm.get();
+		s += curChar;
+		curChar = m_strstrm.peek();
 	}
 	if (s.length() > 0)
 	{
@@ -100,7 +102,8 @@ Tokenizer::EvaluatePostfixFunction()
 }
 
 bool
-Tokenizer::EvaluateCharacter(char expected) {
+Tokenizer::EvaluateCharacter(char expected)
+{
 	SkipWhiteSpaces();
 	bool expectedChar = false;
 	char ch = m_strstrm.peek();
@@ -114,7 +117,8 @@ Tokenizer::EvaluateCharacter(char expected) {
 }
 
 bool 
-Tokenizer::EvaluateCharacters(const std::string &expected) {
+Tokenizer::EvaluateCharacters(const std::string &expected) 
+{
 	SkipWhiteSpaces();
 	
 	bool expectedChars = false;
@@ -132,27 +136,31 @@ Tokenizer::EvaluateCharacters(const std::string &expected) {
 }
 
 int 
-Tokenizer::GetCurPos() {
+Tokenizer::GetCurPos() 
+{
 	return m_strstrm.tellg();
 }
 
 bool 
-Tokenizer::ReachedEnd() {
+Tokenizer::ReachedEnd() const
+{
 	return m_strstrm.eof();
 }
 
 void 
-Tokenizer::SetCurPos(int curPos) {
+Tokenizer::SetCurPos(int curPos) 
+{
 	m_strstrm.clear();
 	m_strstrm.seekg(std::min(m_length, curPos));
 }
 
 void 
-Tokenizer::SkipWhiteSpaces() {
-	char ch = m_strstrm.peek();
-	while (isspace(ch)) {
-		ch = m_strstrm.get();
-		ch = m_strstrm.peek();
+Tokenizer::SkipWhiteSpaces() 
+{
+	char curChar = m_strstrm.peek();
+	while (isspace(curChar)) {
+		curChar = m_strstrm.get();
+		curChar = m_strstrm.peek();
 	}
 }
 

@@ -11,10 +11,6 @@ Parser::Parser()
 	BuildFunctionsMap();
 }
 
-Parser::~Parser()
-{
-}
-
 void
 Parser::AddStatement(std::string statement)
 {
@@ -34,16 +30,9 @@ Parser::EvaluateStatements()
 		}
 		else
 		{
-			//error?
+			std::cout << "Parser: Could not evaluate the statement: " << statement << std::endl;
 		}
 	}
-}
-
-//todo: remove function
-void
-Parser::set_line(const std::string &line)
-{
-	m_tokenizer.SetStatement(line);
 }
 
 void
@@ -63,14 +52,14 @@ Parser::BuildFunctionsMap()
 double 
 Parser::LookupVariable(const std::string& var) const
 {
-	double res(0);
+	double variableValue(0);
 	for (const auto &varEntry : m_vars)
 		if (varEntry.m_name == var)
 		{
-			res = varEntry.m_value;
+			variableValue = varEntry.m_value;
 			break;
 		}
-	return res;
+	return variableValue;
 }
 
 std::vector<std::string>

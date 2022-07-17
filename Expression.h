@@ -4,11 +4,14 @@
 
 class Parser;
 
+/*
+	Expression abstract class
+*/
 class Expression
 {
 public:
 	Expression();
-	virtual ~Expression();
+	virtual ~Expression() = default;
 
 	void SetParser(Parser* parser) { m_parser = parser;}
 
@@ -20,6 +23,9 @@ protected:
 
 using ExpressionPtr = std::shared_ptr<Expression>;
 
+/*
+	NumberExpression class represents a number
+*/
 class NumberExpression : public Expression
 {
 public:
@@ -31,6 +37,9 @@ private:
 
 using NumberExpressionPtr = std::shared_ptr<NumberExpression>;
 
+/*
+	VariableExpression class represents a variable
+*/
 class VariableExpression : public Expression
 {
 public:
@@ -41,6 +50,12 @@ private:
 	std::string variable;
 };
 
+
+using VariableExpressionPtr = std::shared_ptr<VariableExpression>;
+
+/*
+	PostfixVariableExpression class represents a variable that applies the postfix operator on it
+*/
 class PostfixVariableExpression : public VariableExpression
 {
 public:
@@ -51,8 +66,12 @@ private:
 	bool m_firstIncrement = true;
 };
 
-using VariableExpressionPtr = std::shared_ptr<VariableExpression>;
+using PostfixVariableExpressionPtr = std::shared_ptr<PostfixVariableExpression>;
 
+/*
+	ArithmeticExpression class represents a binary operation of 2 expressions
+	e.g. lhs OP rhs
+*/
 class ArithmeticExpression : public Expression
 {
 public:
@@ -63,6 +82,12 @@ protected:
 	ExpressionPtr m_right;
 };
 
+using ArithmeticExpressionPtr = std::shared_ptr<ArithmeticExpression>;
+
+/*
+	AdditionExpression class represents an addition of 2 expressions
+	e.g. lhs + rhs
+*/
 class AdditionExpression : public ArithmeticExpression
 {
 public:
@@ -70,6 +95,13 @@ public:
 	virtual double Evaluate() override;
 };
 
+using AdditionExpressionPtr = std::shared_ptr<AdditionExpression>;
+
+
+/*
+	SubstractionExpression class represents a substraction of 2 expressions
+	e.g. lhs - rhs
+*/
 class SubstractionExpression : public ArithmeticExpression
 {
 public:
@@ -77,6 +109,12 @@ public:
 	virtual double Evaluate() override;
 };
 
+using SubstractionExpressionPtr = std::shared_ptr<SubstractionExpression>;
+
+/*
+	MultiplicationExpression class represents a multiplication of 2 expressions
+	e.g. lhs * rhs
+*/
 class MultiplicationExpression : public ArithmeticExpression
 {
 public:
@@ -84,6 +122,12 @@ public:
 	virtual double Evaluate() override;	
 };
 
+using MultiplicationExpressionPtr = std::shared_ptr<MultiplicationExpression>;
+
+/*
+	DivisionExpression class represents a division of 2 expressions
+	e.g. lhs / rhs
+*/
 class DivisionExpression : public ArithmeticExpression
 {
 public:
@@ -91,6 +135,12 @@ public:
 	virtual double Evaluate() override;
 };
 
+using DivisionExpressionPtr = std::shared_ptr<DivisionExpression>;
+
+/*
+	ModulusExpression class represents a modulo of 2 expressions
+	e.g. lhs % rhs
+*/
 class ModulusExpression : public ArithmeticExpression
 {
 public:
@@ -98,6 +148,12 @@ public:
 	virtual double Evaluate() override;
 };
 
+using ModulusExpressionPtr = std::shared_ptr<ModulusExpression>;
+
+/*
+	ExponentiationExpression class represents the base lhs and the exponent rhs
+	e.g. lhs ^ rhs
+*/
 class ExponentiationExpression : public ArithmeticExpression
 {
 public:
@@ -105,8 +161,13 @@ public:
 	virtual double Evaluate() override;
 };
 
-using ArithmeticExpressionPtr = std::shared_ptr<ArithmeticExpression>;
+using ExponentiationExpressionPtr = std::shared_ptr<ExponentiationExpression>;
 
+/*
+	ArithmeticExpressionPtr class represents assigning an expression to a variable
+	e.g. lhs = rhs
+	where lhs is a variable and rhs is an expression
+*/
 class AssignmentExpression : public Expression
 {
 public:
@@ -116,8 +177,13 @@ private:
 	VariableExpressionPtr m_var;
 	ExpressionPtr m_value;
 };
+
 using AssignmentExpressionPtr = std::shared_ptr<AssignmentExpression>;
 
+/*
+	ArithmeticExpressionPtr class represents applying an expression on a function
+	e.g. f(value)
+*/
 class FunctionCallExpression : public Expression
 {
 public:
@@ -127,4 +193,5 @@ private:
 	std::string m_function_name;
 	ExpressionPtr m_value;
 };
+
 using FunctionCallExpressionPtr = std::shared_ptr<FunctionCallExpression>;

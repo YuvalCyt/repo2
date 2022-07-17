@@ -6,14 +6,14 @@
 Expression::Expression()
 {
 }
-Expression::~Expression() {}
 
 NumberExpression::NumberExpression(double val) 
 	: value(val) 
 {
 }
 
-double NumberExpression::Evaluate() {
+double NumberExpression::Evaluate()
+{
 	return value;
 }
 
@@ -23,7 +23,8 @@ VariableExpression::VariableExpression(Parser *parser, const std::string& var)
 	SetParser(parser);
 }
 
-double VariableExpression::Evaluate() {
+double VariableExpression::Evaluate() 
+{
 	double res(0);
 	if (m_parser)
 		res = m_parser->LookupVariable(variable);
@@ -36,7 +37,8 @@ PostfixVariableExpression::PostfixVariableExpression(Parser *parser, const std::
 {
 }
 
-double PostfixVariableExpression::Evaluate() {
+double PostfixVariableExpression::Evaluate() 
+{
 	double res(0);
 	if (m_parser)
 	{
@@ -65,7 +67,6 @@ ArithmeticExpression::Validate() const
 AdditionExpression::AdditionExpression(const ExpressionPtr &left, const ExpressionPtr &right)
 	: ArithmeticExpression(left, right)
 {
-
 }
 
 double 
@@ -86,7 +87,6 @@ AdditionExpression::Evaluate()
 SubstractionExpression::SubstractionExpression(const ExpressionPtr &left, const ExpressionPtr &right)
 	: ArithmeticExpression(left, right)
 {
-
 }
 
 double 
@@ -106,7 +106,6 @@ SubstractionExpression::Evaluate()
 MultiplicationExpression::MultiplicationExpression(const ExpressionPtr &left, const ExpressionPtr &right)
 	: ArithmeticExpression(left, right)
 {
-
 }
 
 double 
@@ -126,7 +125,6 @@ MultiplicationExpression::Evaluate()
 DivisionExpression::DivisionExpression(const ExpressionPtr &left, const ExpressionPtr &right)
 	: ArithmeticExpression(left, right)
 {
-
 }
 
 double 
@@ -154,7 +152,6 @@ DivisionExpression::Evaluate()
 ModulusExpression::ModulusExpression(const ExpressionPtr &left, const ExpressionPtr &right)
 	: ArithmeticExpression(left, right)
 {
-
 }
 
 double 
@@ -182,7 +179,6 @@ ModulusExpression::Evaluate()
 ExponentiationExpression::ExponentiationExpression(const ExpressionPtr &left, const ExpressionPtr &right)
 	: ArithmeticExpression(left, right)
 {
-
 }
 
 double 
@@ -203,7 +199,8 @@ AssignmentExpression::AssignmentExpression(Parser *parser, const VariableExpress
 }
 
 
-double AssignmentExpression::Evaluate() {
+double AssignmentExpression::Evaluate() 
+{
 	double x = 0;
 	if (m_value)
 		x = m_value->Evaluate();

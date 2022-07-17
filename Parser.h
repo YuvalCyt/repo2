@@ -7,10 +7,32 @@
 #include <functional>
 
 class Expression;
+
+/*
+	Parser class to parse, interpret and evaluate CFG statements
+
+	The grammar rules are:
+	Statement -> Assignment OR Calculation
+	Assignment -> Variable '=' Sum
+	Calculation -> Sum
+	Sum -> Product (('+' Product)|('-' Product))*
+	Product -> Factor (('*' Factor)|('/' Factor))*
+	Factor -> Power | Term
+	Power -> Function | Term '^' Factor
+	Term -> Group | Variable | Number
+	Function -> PrefixFunction | PostFixFunction | FunctionCall
+	PrefixFunction -> ++'Variable'
+	PostFixFunction -> 'Variable'++
+	FunctionCall -> FunctionName '(' Sum ')'
+	Group -> '(' Sum ')'
+*/
 class Parser
 {
 public:
 
+	/*
+		VarEntry utility class to hold data of the stored variables by the order of creation
+	*/
 	struct VarEntry{
 		VarEntry(const std::string &varName, double varValue)
 			: m_name(varName)
@@ -23,13 +45,13 @@ public:
 		double m_value;
 	};
 	Parser();
-	~Parser();
+	~Parser() = default;
 	void AddStatement(std::string statement);
 	void EvaluateStatements();
-	void set_line(const std::string &line);
 
 	ExpressionPtr EvaluateStatement();
 
+	//Print variables to stdout according to the required format
 	void PrintVariables() const;
 	double LookupVariable(const std::string& var) const;
 	void RecordVariable(const std::string& var, double value);
