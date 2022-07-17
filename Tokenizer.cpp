@@ -13,7 +13,7 @@ Tokenizer::SetStatement(const std::string &statement)
 {
 	m_strstrm.str(statement);
 	m_length = statement.length();
-	SetCurPos(0);
+	SetCurrenPosition(0);
 }
 
 std::shared_ptr<NumberExpression> 
@@ -57,7 +57,7 @@ Tokenizer::EvalutateVariable()
 ExpressionPtr 
 Tokenizer::EvaluatePrefixFunction()
 {
-	int curPos = m_strstrm.tellg();
+	int curPos = GetCurrentPosition();
 	SkipWhiteSpaces();
 	ExpressionPtr exp;
 	std::string prefix(GetPostPreFixType());
@@ -67,13 +67,14 @@ Tokenizer::EvaluatePrefixFunction()
 		if (!var_name.empty())
 		{
 			double addedValue = prefix == "++" ? 1 : -1;
-			m_parser->RecordVariable(var_name, m_parser->LookupVariable(var_name) + addedValue);
-			exp = std::make_shared<VariableExpression>(m_parser, var_name);	
-			curPos +=  prefix.length() + var_name.length();
+			double varValue = m_parser->LookupVariable(var_name);
+			m_parser->RecordVariable(var_name, varValue + addedValue);
+			exp = std::make_shared<NumberExpression>(varValue + addedValue);
+			curPos = GetCurrentPosition();
 		}
 	}
 
-	SetCurPos(curPos);
+	SetCurrenPosition(curPos);
 
 	return exp;
 }
@@ -82,7 +83,7 @@ Tokenizer::EvaluatePrefixFunction()
 ExpressionPtr 
 Tokenizer::EvaluatePostfixFunction()
 {
-	int curPos = m_strstrm.tellg();
+	int curPos = GetCurrentPosition();
 	SkipWhiteSpaces();
 	ExpressionPtr exp;
 	std::string var_name(GetCurrentVariableName());
@@ -91,12 +92,15 @@ Tokenizer::EvaluatePostfixFunction()
 		std::string postfix = GetPostPreFixType();
 		if (!postfix.empty())
 		{
-			exp = std::make_shared<PostfixVariableExpression>(m_parser, var_name, postfix == "++");	
-			curPos += var_name.length() + postfix.length();
+			double addedValue = postfix == "++" ? 1 : -1;
+			double varValue = m_parser->LookupVariable(var_name);
+			m_parser->RecordVariable(var_name, varValue + addedValue);
+			exp = std::make_shared<NumberExpression>(varValue);
+			curPos = GetCurrentPosition();
 		}
 	}
 
-	SetCurPos(curPos);
+	SetCurrenPosition(curPos);
 
 	return exp;
 }
@@ -119,24 +123,27 @@ Tokenizer::EvaluateCharacter(char expected)
 bool 
 Tokenizer::EvaluateCharacters(const std::string &expected) 
 {
+	int curPos = GetCurrentPosition();
 	SkipWhiteSpaces();
 	
 	bool expectedChars = false;
 	if (!ReachedEnd())
 	{
-		std::string s = m_strstrm.str().substr(GetCurPos());
+		std::string s = m_strstrm.str().substr(GetCurrentPosition());
 		if (s.find(expected) == 0)
 		{
-			m_strstrm.seekg(GetCurPos() + expected.length());
+			m_strstrm.seekg(GetCurrentPosition() + expected.length());
 			expectedChars = true;
 		}
 	}
+	if (!expectedChars)
+		SetCurrenPosition(curPos);
 
 	return expectedChars;
 }
 
 int 
-Tokenizer::GetCurPos() 
+Tokenizer::GetCurrentPosition() 
 {
 	return m_strstrm.tellg();
 }
@@ -148,7 +155,7 @@ Tokenizer::ReachedEnd() const
 }
 
 void 
-Tokenizer::SetCurPos(int curPos) 
+Tokenizer::SetCurrenPosition(int curPos) 
 {
 	m_strstrm.clear();
 	m_strstrm.seekg(std::min(m_length, curPos));
