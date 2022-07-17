@@ -72,6 +72,7 @@ protected:
 
 private:
 
+	//Prepopulate the functions map that can be interpreted
 	void BuildFunctionsMap();
 	Tokenizer m_tokenizer;
 	std::vector<std::string> m_statements;
