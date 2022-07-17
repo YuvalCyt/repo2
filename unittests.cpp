@@ -187,21 +187,35 @@ bool test_case9()
 	return evaluate_and_compare(statements, expectedValues);
 }
 
+bool test_case10()
+{
+	std::vector<std::string> statements {
+		std::string("a=0"), std::string("b=a++ + ++a"), std::string("c=--b + ++b"), 
+	};
+
+	std::map<std::string, double> expectedValues {
+		{std::string("a"), 2}, {std::string("b"), 2}, {std::string("c"), 3}
+	};
+
+	return evaluate_and_compare(statements, expectedValues);
+}
+
 
 void UnitTests::RunUnitTests()
 {
 	std::cout << "Running unit tests:" << std::endl;
 	size_t passed(0), failed(0);
-	test_case0() ? ++passed : ++failed;
-	test_case1() ? ++passed : ++failed;
-	test_case2() ? ++passed : ++failed;
-	test_case3() ? ++passed : ++failed;
-	test_case4() ? ++passed : ++failed;
-	test_case5() ? ++passed : ++failed;
-	test_case6() ? ++passed : ++failed;
-	test_case7() ? ++passed : ++failed;
-	test_case8() ? ++passed : ++failed;
-	test_case9() ? ++passed : ++failed;
+	test_case0() 	? ++passed : ++failed;
+	test_case1() 	? ++passed : ++failed;
+	test_case2() 	? ++passed : ++failed;
+	test_case3() 	? ++passed : ++failed;
+	test_case4() 	? ++passed : ++failed;
+	test_case5() 	? ++passed : ++failed;
+	test_case6() 	? ++passed : ++failed;
+	test_case7() 	? ++passed : ++failed;
+	test_case8() 	? ++passed : ++failed;
+	test_case9() 	? ++passed : ++failed;
+	test_case10() 	? ++passed : ++failed;
 
 	std::cout << "Ran  " << passed+failed <<" tests" << std::endl;
 	std::cout << passed << " tests passed" << std::endl;
